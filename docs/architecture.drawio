@@ -1,0 +1,209 @@
+<mxfile host="app.diagrams.net" modified="2026-10-05T10:00:00.000Z" agent="draw.io" version="24.7.17" type="device">
+  <diagram id="arquitectura" name="Arquitectura">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Título -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px&quot;&gt;tuLlave · API de Recargas Digitales — Arquitectura&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Java 21 · Spring Boot 3.5 · PostgreSQL 16 · Docker Compose&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="620" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Clientes -->
+        <mxCell id="clients" value="&lt;b&gt;Clientes&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#F5F5F5;strokeColor=#9E9E9E;fontSize=12;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="client-swagger" value="Swagger UI&lt;br&gt;&lt;font color=&quot;#666666&quot; style=&quot;font-size: 10px&quot;&gt;/swagger-ui.html&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="55" y="295" width="140" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="client-postman" value="Postman / newman&lt;br&gt;&lt;font color=&quot;#666666&quot; style=&quot;font-size: 10px&quot;&gt;colección con 26 requests&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="55" y="340" width="140" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="client-apps" value="Apps / curl" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="55" y="385" width="140" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Docker Compose -->
+        <mxCell id="compose" value="&lt;b&gt;Docker Compose&lt;/b&gt;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#666666&quot;&gt;red interna · depends_on: db healthy&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;dashed=1;dashPattern=8 4;fillColor=#F3F9FF;strokeColor=#2496ED;strokeWidth=2;fontSize=12;fontColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="270" y="90" width="830" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- Contenedor API -->
+        <mxCell id="api" value="&lt;b&gt;Contenedor tullave-api&lt;/b&gt;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#666666&quot;&gt;Spring Boot 3.5 · JRE 21 Alpine · usuario no root · :8080&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fillColor=#F1F8E9;strokeColor=#6DB33F;strokeWidth=2;fontSize=12;fontColor=#33691E;" vertex="1" parent="1">
+          <mxGeometry x="300" y="140" width="520" height="560" as="geometry" />
+        </mxCell>
+
+        <!-- Capa web -->
+        <mxCell id="web" value="&lt;b&gt;Capa Web&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;RechargeController · /api/v1&lt;br&gt;POST /recharges · GET /getRecharges (alias /recharges)&lt;br&gt;GET y DELETE /recharges/{id}&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Bean Validation sobre DTOs (records)&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="190" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Capa servicio -->
+        <mxCell id="service" value="&lt;b&gt;Capa Servicio&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;RechargeService → RechargeServiceImpl&lt;br&gt;casos de uso · @Transactional · tarjeta enmascarada en logs&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;RechargeMapper: DTO ⇄ entidad&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="340" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Capa persistencia -->
+        <mxCell id="repo" value="&lt;b&gt;Capa Persistencia&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;RechargeRepository (Spring Data JPA)&lt;br&gt;findByCardNumber(paginado) · findAll · save · delete&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Hibernate 6 · entidad Recharge · ddl-auto = validate&lt;/font&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="490" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- HikariCP -->
+        <mxCell id="hikari" value="HikariCP (pool JDBC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="630" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Transversales -->
+        <mxCell id="cross-title" value="&lt;font color=&quot;#666666&quot;&gt;&lt;b&gt;Transversal&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="170" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="advice" value="&lt;b&gt;GlobalExceptionHandler&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;@RestControllerAdvice&lt;br&gt;ErrorResponse único&lt;br&gt;400 · 404 · 405 · 500&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FB8C00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="195" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="springdoc" value="&lt;b&gt;springdoc-openapi&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Swagger UI · /v3/api-docs&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#6DB33F;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="280" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="actuator" value="&lt;b&gt;Actuator&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;/actuator/health (liveness, readiness)&lt;br&gt;usado por el HEALTHCHECK&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#6DB33F;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="345" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="flyway" value="&lt;b&gt;Flyway&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;V1__create_recharges.sql&lt;br&gt;migraciones al arrancar&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#E53935;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="420" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="logging" value="&lt;b&gt;SLF4J / Logback&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;INFO crear/eliminar · WARN cliente&lt;br&gt;ERROR + stack trace&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="495" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="config" value="&lt;b&gt;Configuración&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;application.yml + variables de entorno&lt;br&gt;DB_URL · DB_USERNAME · DB_PASSWORD&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="570" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Contenedor DB -->
+        <mxCell id="db" value="&lt;b&gt;Contenedor tullave-db&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;PostgreSQL 16 Alpine · :5432&lt;br&gt;healthcheck pg_isready&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fillColor=#E8EEF6;strokeColor=#336791;strokeWidth=2;fontSize=12;fontColor=#1F3F5F;" vertex="1" parent="1">
+          <mxGeometry x="850" y="140" width="230" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="table" value="&lt;b&gt;tabla recharges&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;id BIGSERIAL PK&lt;br&gt;reference UUID UNIQUE&lt;br&gt;card_number VARCHAR(16)&lt;br&gt;amount NUMERIC(12,2)&lt;br&gt;payment_method VARCHAR(20)&lt;br&gt;created_at TIMESTAMPTZ&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;CHECK: 16 dígitos · 2.000–200.000&lt;br&gt;· medios de pago válidos&lt;br&gt;índices: (card_number, created_at) · created_at&lt;/font&gt;&lt;/font&gt;" style="shape=table;startSize=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#336791;fontSize=11;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="870" y="210" width="190" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="history" value="flyway_schema_history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#336791;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="870" y="430" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="volume" value="&lt;b&gt;volumen tullave-pgdata&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;persiste tras docker compose down&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#FFFFFF;strokeColor=#336791;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="520" width="130" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- CI -->
+        <mxCell id="ci" value="&lt;b&gt;GitHub Actions (CI)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;mvn test · mvn verify -Pit (Testcontainers) · docker build&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#9E9E9E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="190" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Flechas -->
+        <mxCell id="e-client-web" value="HTTP / JSON&lt;br&gt;localhost:8080" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#424242;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="clients" target="web">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="250" y="345" />
+              <mxPoint x="250" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-web-service" value="DTOs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6DB33F;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="web" target="service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-service-repo" value="entidad" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6DB33F;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="service" target="repo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-repo-hikari" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#9E9E9E;fontSize=10;" edge="1" parent="1" source="repo" target="hikari">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-hikari-db" value="JDBC · jdbc:postgresql://db:5432/tullave" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#336791;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.9;entryDx=0;entryDy=0;" edge="1" parent="1" source="hikari" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="14" as="offset" />
+            <Array as="points">
+              <mxPoint x="835" y="645" />
+              <mxPoint x="835" y="565" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-flyway-db" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#E53935;dashed=1;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="flyway" target="history">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-advice-web" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#FB8C00;dashed=1;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="advice" target="web">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ci" value="push / PR" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#9E9E9E;dashed=1;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ci" target="compose">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="270" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="flujo" name="Flujo de una petición">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="f0" />
+        <mxCell id="f1" parent="f0" />
+
+        <mxCell id="f-title" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px&quot;&gt;Flujo de POST /api/v1/recharges&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;camino feliz (201) y camino de error (400 / 404)&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="f1">
+          <mxGeometry x="40" y="20" width="620" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Camino feliz -->
+        <mxCell id="s1" value="&lt;b&gt;1. Cliente&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;POST JSON&lt;br&gt;{cardNumber, amount, paymentMethod}&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#9E9E9E;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="40" y="150" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;2. RechargeController&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Jackson deserializa → RechargeRequest&lt;br&gt;@Valid: 16 dígitos, 2.000–200.000, enum&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="250" y="150" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;3. RechargeServiceImpl.create&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;@Transactional · log INFO (tarjeta ****5678)&lt;br&gt;RechargeMapper.toEntity&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="490" y="150" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;4. RechargeRepository.save&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;@PrePersist: reference = UUID, createdAt = now&lt;br&gt;INSERT vía Hibernate / HikariCP&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6DB33F;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="730" y="150" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="&lt;b&gt;5. PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;CHECK constraints · id BIGSERIAL&lt;br&gt;commit&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EEF6;strokeColor=#336791;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="970" y="150" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="&lt;b&gt;6. Respuesta 201 Created&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;Location: /api/v1/recharges/{id}&lt;br&gt;body: RechargeResponse (id, reference, cardNumber, amount, paymentMethod, createdAt)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="250" y="290" width="440" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fe1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#424242;" edge="1" parent="f1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6DB33F;" edge="1" parent="f1" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6DB33F;" edge="1" parent="f1" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#336791;" edge="1" parent="f1" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe5" value="toResponse" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="f1" source="s5" target="s6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1050" y="320" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fe6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="f1" source="s6" target="s1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="125" y="320" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Camino de error -->
+        <mxCell id="err-title" value="&lt;b&gt;Camino de error&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;fontSize=12;fontColor=#E65100;" vertex="1" parent="f1">
+          <mxGeometry x="40" y="420" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="x1" value="&lt;b&gt;Excepción&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;MethodArgumentNotValidException (body)&lt;br&gt;ConstraintViolationException (query params)&lt;br&gt;HttpMessageNotReadableException (enum / JSON)&lt;br&gt;ResourceNotFoundException (id inexistente)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FB8C00;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="40" y="455" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="x2" value="&lt;b&gt;GlobalExceptionHandler&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;@RestControllerAdvice&lt;br&gt;log WARN (cliente) · ERROR (inesperado)&lt;br&gt;construye ErrorResponse&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FB8C00;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="350" y="455" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="x3" value="&lt;b&gt;Respuesta 400 / 404 / 405 / 500&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;{ timestamp, status, error, message, path,&lt;br&gt;errors: [ { field, message } ] }&lt;br&gt;sin stack trace ni detalles internos&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#E53935;fontSize=11;" vertex="1" parent="f1">
+          <mxGeometry x="640" y="455" width="290" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xe1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#FB8C00;" edge="1" parent="f1" source="x1" target="x2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="xe2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#E53935;" edge="1" parent="f1" source="x2" target="x3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="xe0" value="lanzada desde controlador o servicio" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#FB8C00;dashed=1;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="f1" source="s2" target="x1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="230" y="206" /><mxPoint x="230" y="400" /><mxPoint x="170" y="400" /></Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

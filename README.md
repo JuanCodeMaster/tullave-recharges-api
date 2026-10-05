@@ -178,6 +178,16 @@ com.tullave.recharges
 └── config       OpenApiConfig
 ```
 
+### Diagrama de arquitectura
+
+![Arquitectura de la API de recargas](docs/architecture.png)
+
+Flujo de una petición `POST /api/v1/recharges`, con el camino feliz (201) y el camino de error (400/404):
+
+![Flujo de una petición](docs/request-flow.png)
+
+Ambos diagramas están en `docs/architecture.drawio` (dos páginas) y se pueden editar en [draw.io / diagrams.net](https://app.diagrams.net).
+
 Cada capa solo conoce a la inmediatamente inferior y el controlador depende de la interfaz del servicio, no de
 la implementación. Los DTOs son `record`s inmutables; la entidad nunca sale del servicio.
 
