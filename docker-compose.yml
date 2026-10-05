@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tullave-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tullave}
+      POSTGRES_USER: ${POSTGRES_USER:-tullave}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tullave}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - tullave-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tullave} -d ${POSTGRES_DB:-tullave}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tullave/recharges-api:1.0.0
+    container_name: tullave-api
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-tullave}
+      DB_USERNAME: ${POSTGRES_USER:-tullave}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-tullave}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  tullave-pgdata:
