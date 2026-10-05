@@ -11,6 +11,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -53,7 +54,8 @@ public class Recharge {
 
     public Recharge(String cardNumber, BigDecimal amount, PaymentMethod paymentMethod) {
         this.cardNumber = cardNumber;
-        this.amount = amount;
+        // Se normaliza a 2 decimales para que la respuesta sea idéntica recién creada o leída desde la BD.
+        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
         this.paymentMethod = paymentMethod;
     }
 
