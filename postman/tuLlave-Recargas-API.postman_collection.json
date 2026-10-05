@@ -1,0 +1,697 @@
+{
+  "info": {
+    "name": "tuLlave Recargas API",
+    "description": "Colección de la API de recargas digitales tuLlave.\n\nIncluye casos exitosos y de error para cada endpoint. Cada request trae pruebas automáticas (pestaña *Tests*), así que la colección completa puede ejecutarse con el Collection Runner o con Newman:\n\n`newman run postman/tuLlave-Recargas-API.postman_collection.json -e postman/tuLlave-Local.postman_environment.json`\n\nLas carpetas están pensadas para ejecutarse en orden: el POST exitoso guarda el id creado en la variable `rechargeId`, que luego usan GET por id y DELETE.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "cardNumber", "value": "1010000012345678" },
+    { "key": "rechargeId", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pruebas comunes a toda la colección",
+          "pm.test('Responde en menos de 2 s', () => pm.expect(pm.response.responseTime).to.be.below(2000));",
+          "if (pm.response.code >= 400) {",
+          "    pm.test('Error con formato estándar', () => {",
+          "        const body = pm.response.json();",
+          "        pm.expect(body).to.include.all.keys('timestamp', 'status', 'error', 'message', 'path');",
+          "        pm.expect(body.status).to.eql(pm.response.code);",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Crear recarga",
+      "item": [
+        {
+          "name": "POST recarga válida (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Header Location apunta al recurso creado', () => {",
+                  "    pm.expect(pm.response.headers.get('Location')).to.include('/api/v1/recharges/');",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Cuerpo con id, reference y createdAt autogenerados', () => {",
+                  "    pm.expect(body.id).to.be.a('number');",
+                  "    pm.expect(body.reference).to.match(/^[0-9a-f-]{36}$/);",
+                  "    pm.expect(body.createdAt).to.be.a('string');",
+                  "});",
+                  "pm.test('Devuelve los datos enviados', () => {",
+                  "    pm.expect(body.cardNumber).to.eql(pm.collectionVariables.get('cardNumber'));",
+                  "    pm.expect(body.amount).to.eql(50000);",
+                  "    pm.expect(body.paymentMethod).to.eql('NEQUI');",
+                  "});",
+                  "pm.collectionVariables.set('rechargeId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"{{cardNumber}}\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"NEQUI\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST montos límite 2.000 y decimales (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Monto mínimo aceptado con 2 decimales', () => pm.expect(pm.response.json().amount).to.eql(2000.5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"{{cardNumber}}\",\n  \"amount\": 2000.50,\n  \"paymentMethod\": \"PSE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST monto máximo 200.000 otra tarjeta (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Monto máximo aceptado', () => pm.expect(pm.response.json().amount).to.eql(200000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"2020000087654321\",\n  \"amount\": 200000,\n  \"paymentMethod\": \"CREDIT_CARD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST tarjeta con menos de 16 dígitos (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el campo cardNumber', () => {",
+                  "    const errors = pm.response.json().errors;",
+                  "    pm.expect(errors).to.have.lengthOf(1);",
+                  "    pm.expect(errors[0].field).to.eql('cardNumber');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"12345\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"NEQUI\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST tarjeta con letras (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el campo cardNumber', () => pm.expect(pm.response.json().errors[0].field).to.eql('cardNumber'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"10100000ABCD5678\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"NEQUI\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST monto menor al mínimo (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el campo amount con mensaje de mínimo', () => {",
+                  "    const err = pm.response.json().errors[0];",
+                  "    pm.expect(err.field).to.eql('amount');",
+                  "    pm.expect(err.message).to.include('mínimo');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"{{cardNumber}}\",\n  \"amount\": 1999.99,\n  \"paymentMethod\": \"DAVIPLATA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST monto mayor al máximo (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el campo amount con mensaje de máximo', () => {",
+                  "    const err = pm.response.json().errors[0];",
+                  "    pm.expect(err.field).to.eql('amount');",
+                  "    pm.expect(err.message).to.include('máximo');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"{{cardNumber}}\",\n  \"amount\": 200000.01,\n  \"paymentMethod\": \"DAVIPLATA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST medio de pago no permitido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Indica los valores válidos del enum', () => {",
+                  "    const err = pm.response.json().errors[0];",
+                  "    pm.expect(err.field).to.eql('paymentMethod');",
+                  "    pm.expect(err.message).to.include('PSE, NEQUI, DAVIPLATA, CREDIT_CARD');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardNumber\": \"{{cardNumber}}\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"EFECTIVO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST cuerpo vacío: todos los campos faltantes (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta los 3 campos obligatorios a la vez', () => {",
+                  "    const fields = pm.response.json().errors.map(e => e.field).sort();",
+                  "    pm.expect(fields).to.eql(['amount', 'cardNumber', 'paymentMethod']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "POST JSON mal formado (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Mensaje de cuerpo inválido sin detalle por campo', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.message).to.include('mal formado');",
+                  "    pm.expect(body).to.not.have.property('errors');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"cardNumber\": " },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Listar recargas",
+      "item": [
+        {
+          "name": "GET listado por defecto (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Estructura de página', () => {",
+                  "    pm.expect(body).to.include.all.keys('content', 'page', 'size', 'totalElements', 'totalPages', 'first', 'last');",
+                  "    pm.expect(body.page).to.eql(0);",
+                  "    pm.expect(body.size).to.eql(10);",
+                  "});",
+                  "pm.test('Contiene las recargas creadas', () => pm.expect(body.totalElements).to.be.at.least(3));",
+                  "pm.test('Ordenado por fecha descendente', () => {",
+                  "    const dates = body.content.map(r => r.createdAt);",
+                  "    const sorted = [...dates].sort().reverse();",
+                  "    pm.expect(dates).to.eql(sorted);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/getRecharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "getRecharges"] }
+          }
+        },
+        {
+          "name": "GET filtrado por tarjeta y paginado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Respeta page y size', () => {",
+                  "    pm.expect(body.page).to.eql(0);",
+                  "    pm.expect(body.size).to.eql(1);",
+                  "    pm.expect(body.content).to.have.lengthOf(1);",
+                  "});",
+                  "pm.test('Solo devuelve la tarjeta filtrada', () => {",
+                  "    body.content.forEach(r => pm.expect(r.cardNumber).to.eql(pm.collectionVariables.get('cardNumber')));",
+                  "});",
+                  "pm.test('Hay más páginas', () => pm.expect(body.last).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/getRecharges?cardNumber={{cardNumber}}&page=0&size=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "getRecharges"],
+              "query": [
+                { "key": "cardNumber", "value": "{{cardNumber}}" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET tarjeta sin recargas: página vacía (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Página vacía, no error', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.content).to.be.empty;",
+                  "    pm.expect(body.totalElements).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/getRecharges?cardNumber=9999999999999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "getRecharges"],
+              "query": [{ "key": "cardNumber", "value": "9999999999999999" }]
+            }
+          }
+        },
+        {
+          "name": "GET alias REST /recharges (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Misma estructura que /getRecharges', () => pm.expect(pm.response.json()).to.have.property('content'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "GET filtro de tarjeta inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el parámetro cardNumber', () => pm.expect(pm.response.json().errors[0].field).to.eql('cardNumber'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/getRecharges?cardNumber=abc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "getRecharges"],
+              "query": [{ "key": "cardNumber", "value": "abc" }]
+            }
+          }
+        },
+        {
+          "name": "GET tamaño de página mayor a 100 (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el parámetro size', () => pm.expect(pm.response.json().errors[0].field).to.eql('size'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/getRecharges?size=500",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "getRecharges"],
+              "query": [{ "key": "size", "value": "500" }]
+            }
+          }
+        },
+        {
+          "name": "GET página no numérica (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el parámetro page', () => pm.expect(pm.response.json().errors[0].field).to.eql('page'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/getRecharges?page=uno",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "getRecharges"],
+              "query": [{ "key": "page", "value": "uno" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Consultar por id",
+      "item": [
+        {
+          "name": "GET recarga existente (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve la recarga creada', () => {",
+                  "    pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('rechargeId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges/{{rechargeId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges", "{{rechargeId}}"] }
+          }
+        },
+        {
+          "name": "GET recarga inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Mensaje descriptivo', () => pm.expect(pm.response.json().message).to.include('999999'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges/999999", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges", "999999"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Eliminar recarga",
+      "item": [
+        {
+          "name": "DELETE recarga existente (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));",
+                  "pm.test('Sin cuerpo', () => pm.expect(pm.response.text()).to.be.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges/{{rechargeId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges", "{{rechargeId}}"] }
+          }
+        },
+        {
+          "name": "DELETE la misma recarga otra vez (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato de error con path', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.error).to.eql('Not Found');",
+                  "    pm.expect(body.path).to.eql('/api/v1/recharges/' + pm.collectionVariables.get('rechargeId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges/{{rechargeId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges", "{{rechargeId}}"] }
+          }
+        },
+        {
+          "name": "DELETE id no numérico (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Reporta el parámetro id', () => pm.expect(pm.response.json().errors[0].field).to.eql('id'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges/abc", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges", "abc"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Otros",
+      "item": [
+        {
+          "name": "GET ruta inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato estándar también para rutas desconocidas', () => pm.expect(pm.response.json().message).to.include('no existe'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/no-existe", "host": ["{{baseUrl}}"], "path": ["api", "v1", "no-existe"] }
+          }
+        },
+        {
+          "name": "PUT método no soportado (405)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 405 Method Not Allowed', () => pm.response.to.have.status(405));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/v1/recharges", "host": ["{{baseUrl}}"], "path": ["api", "v1", "recharges"] }
+          }
+        },
+        {
+          "name": "GET health (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Aplicación UP', () => pm.expect(pm.response.json().status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "GET OpenAPI spec (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Documenta los endpoints de recargas', () => {",
+                  "    const paths = Object.keys(pm.response.json().paths);",
+                  "    pm.expect(paths).to.include('/api/v1/recharges');",
+                  "    pm.expect(paths).to.include('/api/v1/recharges/{id}');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/v3/api-docs", "host": ["{{baseUrl}}"], "path": ["v3", "api-docs"] }
+          }
+        }
+      ]
+    }
+  ]
+}
